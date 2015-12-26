@@ -1,0 +1,13 @@
+// $Id$
+// vim:ft=javascript
+
+// If your extension references something external, use ARG_WITH
+// ARG_WITH("phpgo", "for phpgo support", "no");
+
+// Otherwise, use ARG_ENABLE
+// ARG_ENABLE("phpgo", "enable phpgo support", "no");
+
+if (PHP_PHPGO != "no") {
+	EXTENSION("phpgo", "phpgo.c");
+}
+
