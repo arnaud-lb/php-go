@@ -1,4 +1,4 @@
-package phpgo
+package php
 
 // #cgo CFLAGS: -Wall
 // #include "phpgo.h"

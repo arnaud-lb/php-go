@@ -1,4 +1,4 @@
-package phpgo
+package php
 
 // #include <stdlib.h>
 // #include "phpgo.h"

@@ -1,4 +1,4 @@
-package phpgo
+package php
 
 import (
 	"fmt"
