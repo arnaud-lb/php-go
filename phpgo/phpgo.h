@@ -1,5 +1,11 @@
+
+#ifndef PHPGO_H
+#define PHPGO_H
+
 #include <stdlib.h>
 #include <stdint.h>
+
+#define PHPGO_API_VERSION 20151227
 
 typedef struct {
     char * kind;
@@ -31,3 +37,6 @@ php_exports * new_php_exports(size_t num_exports);
 php_export * init_php_exports_export(php_exports * pes, size_t i, size_t num_ins, size_t num_outs);
 php_type * init_php_export_in(php_export * pe, size_t i);
 php_type * init_php_export_out(php_export * pe, size_t i);
+
+#endif /* PHPGO_H */
+

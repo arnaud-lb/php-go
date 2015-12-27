@@ -2,14 +2,8 @@ package phpgo
 
 import (
 	"fmt"
-	"log"
 	"reflect"
-	"unsafe"
 )
-
-var supportedArgKinds = map[reflect.Kind]struct{}{
-	reflect.Int: struct{}{},
-}
 
 type PHPExports struct {
 	exports map[string]*PHPExport
@@ -27,7 +21,22 @@ type PHPType struct {
 	kind string
 }
 
-func NewPHPExports(exports map[string]interface{}) *PHPExports {
+var modules = map[string]*PHPExports{}
+
+var supportedArgKinds = map[reflect.Kind]struct{}{
+	reflect.Int: struct{}{},
+}
+
+func Export(name string, exports map[string]interface{}) *PHPExports {
+	pe, err := newPHPExports(exports)
+	if err != nil {
+		panic(err)
+	}
+	modules[name] = pe
+	return pe
+}
+
+func newPHPExports(exports map[string]interface{}) (*PHPExports, error) {
 
 	phpExports := &PHPExports{
 		exports: make(map[string]*PHPExport, len(exports)),
@@ -35,7 +44,7 @@ func NewPHPExports(exports map[string]interface{}) *PHPExports {
 
 	for name, e := range exports {
 		if pe, err := newPHPExport(name, e); err != nil {
-			log.Fatalf("Failed exporting `%s`: %s", name, err)
+			return nil, fmt.Errorf("Failed exporting `%s`: %s", name, err)
 		} else {
 			phpExports.exports[name] = pe
 		}
@@ -43,11 +52,7 @@ func NewPHPExports(exports map[string]interface{}) *PHPExports {
 
 	phpExports.c = marshalExports(phpExports)
 
-	return phpExports
-}
-
-func (pe *PHPExports) C() unsafe.Pointer {
-	return unsafe.Pointer(pe.c)
+	return phpExports, nil
 }
 
 func newPHPType(t reflect.Type) (*PHPType, error) {

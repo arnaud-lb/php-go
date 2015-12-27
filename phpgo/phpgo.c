@@ -22,7 +22,3 @@ php_type * init_php_export_in(php_export * pe, size_t i) {
 php_type * init_php_export_out(php_export * pe, size_t i) {
     return &pe->outs[i];
 }
-
-void call(php_exports * pes, char * name, int argc, php_arg *argv) {
-
-}

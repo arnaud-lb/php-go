@@ -40,3 +40,11 @@ func PHPGoCall(pes *C.php_export, args *C.php_arg) *C.php_arg {
 	}
 	return (*C.php_arg)(couts)
 }
+
+//export PHPGoExports
+func PHPGoExports(name *C.char) *C.php_exports {
+	if e, ok := modules[C.GoString(name)]; ok {
+		return (*C.php_exports)(e.c)
+	}
+	return nil
+}

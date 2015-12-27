@@ -2,6 +2,7 @@ package phpgo
 
 // #cgo CFLAGS: -Wall
 // #include "phpgo.h"
+// static int32_t _PHPGO_API_VERSION() { return PHPGO_API_VERSION; }
 import "C"
 import "unsafe"
 
@@ -16,7 +17,7 @@ func marshalExports(pes *PHPExports) *CPHPExports {
 		marshalExport(cpe, pe)
 	}
 	cpes.num_exports = C.size_t(len(pes.exports))
-	cpes.version = 20151226
+	cpes.version = C._PHPGO_API_VERSION()
 	return (*CPHPExports)(cpes)
 }
 
