@@ -12,7 +12,6 @@ This is a work in progress.
 
 ## TODO:
 
-- [ ] Finish PHP extension
 - [ ] Support exporting constants
 - [ ] Support all scalar types
 - [ ] Support slices, maps (copying)

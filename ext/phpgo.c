@@ -16,8 +16,6 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id$ */
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -26,21 +24,18 @@
 #include "php_ini.h"
 #include "ext/standard/info.h"
 #include "php_phpgo.h"
+#include "module.h"
+#include "module_class.h"
 
-/* If you declare any globals in php_phpgo.h uncomment this:
 ZEND_DECLARE_MODULE_GLOBALS(phpgo)
-*/
 
-/* True global resources - no need for thread safety here */
-static int le_phpgo;
+int le_phpgo;
 
 /* {{{ phpgo_functions[]
- *
- * Every user visible function must have an entry in phpgo_functions[].
  */
 const zend_function_entry phpgo_functions[] = {
-	PHP_FE(confirm_phpgo_compiled,	NULL)		/* For testing, remove later. */
-	PHP_FE_END	/* Must be the last line in phpgo_functions[] */
+	PHP_FE(phpgo_load,	NULL)
+	PHP_FE_END
 };
 /* }}} */
 
@@ -54,8 +49,8 @@ zend_module_entry phpgo_module_entry = {
 	phpgo_functions,
 	PHP_MINIT(phpgo),
 	PHP_MSHUTDOWN(phpgo),
-	PHP_RINIT(phpgo),		/* Replace with NULL if there's nothing to do at request start */
-	PHP_RSHUTDOWN(phpgo),	/* Replace with NULL if there's nothing to do at request end */
+	PHP_RINIT(phpgo),
+	PHP_RSHUTDOWN(phpgo),
 	PHP_MINFO(phpgo),
 #if ZEND_MODULE_API_NO >= 20010901
 	PHP_PHPGO_VERSION,
@@ -68,34 +63,20 @@ zend_module_entry phpgo_module_entry = {
 ZEND_GET_MODULE(phpgo)
 #endif
 
-/* {{{ PHP_INI
- */
-/* Remove comments and fill if you need to have entries in php.ini
-PHP_INI_BEGIN()
-    STD_PHP_INI_ENTRY("phpgo.global_value",      "42", PHP_INI_ALL, OnUpdateLong, global_value, zend_phpgo_globals, phpgo_globals)
-    STD_PHP_INI_ENTRY("phpgo.global_string", "foobar", PHP_INI_ALL, OnUpdateString, global_string, zend_phpgo_globals, phpgo_globals)
-PHP_INI_END()
-*/
-/* }}} */
-
 /* {{{ php_phpgo_init_globals
  */
-/* Uncomment this function if you have INI entries
 static void php_phpgo_init_globals(zend_phpgo_globals *phpgo_globals)
 {
-	phpgo_globals->global_value = 0;
-	phpgo_globals->global_string = NULL;
+	phpgo_globals->load_counter = 0;
 }
-*/
 /* }}} */
 
 /* {{{ PHP_MINIT_FUNCTION
  */
 PHP_MINIT_FUNCTION(phpgo)
 {
-	/* If you have INI entries, uncomment these lines 
-	REGISTER_INI_ENTRIES();
-	*/
+	ZEND_INIT_MODULE_GLOBALS(phpgo, php_phpgo_init_globals, NULL);
+	phpgo_module_class_init();
 	return SUCCESS;
 }
 /* }}} */
@@ -104,14 +85,10 @@ PHP_MINIT_FUNCTION(phpgo)
  */
 PHP_MSHUTDOWN_FUNCTION(phpgo)
 {
-	/* uncomment this line if you have INI entries
-	UNREGISTER_INI_ENTRIES();
-	*/
 	return SUCCESS;
 }
 /* }}} */
 
-/* Remove if there's nothing to do at request start */
 /* {{{ PHP_RINIT_FUNCTION
  */
 PHP_RINIT_FUNCTION(phpgo)
@@ -120,7 +97,6 @@ PHP_RINIT_FUNCTION(phpgo)
 }
 /* }}} */
 
-/* Remove if there's nothing to do at request end */
 /* {{{ PHP_RSHUTDOWN_FUNCTION
  */
 PHP_RSHUTDOWN_FUNCTION(phpgo)
@@ -134,43 +110,37 @@ PHP_RSHUTDOWN_FUNCTION(phpgo)
 PHP_MINFO_FUNCTION(phpgo)
 {
 	php_info_print_table_start();
-	php_info_print_table_header(2, "phpgo support", "enabled");
+	php_info_print_table_header(2, "phpgo", "enabled");
 	php_info_print_table_end();
-
-	/* Remove comments if you have entries in php.ini
-	DISPLAY_INI_ENTRIES();
-	*/
 }
 /* }}} */
 
-
-/* Remove the following function when you have successfully modified config.m4
-   so that your module can be compiled into PHP, it exists only for testing
-   purposes. */
-
-/* Every user-visible function in PHP should document itself in the source */
-/* {{{ proto string confirm_phpgo_compiled(string arg)
-   Return a string to confirm that the module is compiled in */
-PHP_FUNCTION(confirm_phpgo_compiled)
+/* {{{ proto string phpgo_load(string path, string name)
+   Loads a Go module and returns a class instance */
+PHP_FUNCTION(phpgo_load)
 {
-	char *arg = NULL;
-	int arg_len, len;
-	char *strg;
+	char *path;
+	int path_len;
+	char *name;
+	int name_len;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &arg, &arg_len) == FAILURE) {
+	phpgo_module *module;
+	char *err;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss", &path, &path_len, &name, &name_len) == FAILURE) {
 		return;
 	}
 
-	len = spprintf(&strg, 0, "Congratulations! You have successfully modified ext/%.78s/config.m4. Module %.78s is now compiled into PHP.", "phpgo", arg);
-	RETURN_STRINGL(strg, len, 0);
+	err = phpgo_load(&module, path, name);
+	if (err) {
+		php_error(E_WARNING, "Failed loading %s (%s): %s", path, name, err);
+		efree(err);
+		RETURN_FALSE;
+	}
+
+	phpgo_module_new_instance(return_value, module);
 }
 /* }}} */
-/* The previous line is meant for vim and emacs, so it can correctly fold and 
-   unfold functions in source code. See the corresponding marks just before 
-   function definition, where the functions purpose is also documented. Please 
-   follow this convention for the convenience of others editing your code.
-*/
-
 
 /*
  * Local variables:
