@@ -15,10 +15,10 @@ php_export * init_php_exports_export(php_exports * pes, size_t i, size_t num_ins
     return pe;
 }
 
-php_type * init_php_export_in(php_export * pe, size_t i) {
+php_arg_desc * init_php_export_in(php_export * pe, size_t i) {
     return &pe->ins[i];
 }
 
-php_type * init_php_export_out(php_export * pe, size_t i) {
+php_arg_desc * init_php_export_out(php_export * pe, size_t i) {
     return &pe->outs[i];
 }

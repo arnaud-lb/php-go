@@ -3,28 +3,43 @@ package php
 import (
 	"fmt"
 	"reflect"
+	"sort"
 )
 
 type PHPExports struct {
-	exports map[string]*PHPExport
+	exports []*PHPExport
 	c       *CPHPExports
 }
 
 type PHPExport struct {
 	name  string
 	value reflect.Value
-	ins   []*PHPType
-	outs  []*PHPType
+	ins   []*PHPArgDesc
+	outs  []*PHPArgDesc
 }
 
-type PHPType struct {
-	kind string
+type PHPArgDesc struct {
+	kind CKind
+	name string
 }
 
 var modules = map[string]*PHPExports{}
 
-var supportedArgKinds = map[reflect.Kind]struct{}{
-	reflect.Int: struct{}{},
+var kindMap = map[reflect.Kind]CKind{
+	reflect.Bool:    Bool,
+	reflect.Int:     Int,
+	reflect.Int8:    Int8,
+	reflect.Int16:   Int16,
+	reflect.Int32:   Int32,
+	reflect.Int64:   Int64,
+	reflect.Uint:    Uint,
+	reflect.Uint8:   Uint8,
+	reflect.Uint16:  Uint16,
+	reflect.Uint32:  Uint32,
+	reflect.Uint64:  Uint64,
+	reflect.Float32: Float32,
+	reflect.Float64: Float64,
+	reflect.String:  String,
 }
 
 func Export(name string, exports map[string]interface{}) *PHPExports {
@@ -55,33 +70,35 @@ func newPHPExports(exports map[string]interface{}) (*PHPExports, error) {
 	return phpExports, nil
 }
 
-func newPHPType(t reflect.Type) (*PHPType, error) {
+func newPHPArgDesc(t reflect.Type, nth int) (*PHPArgDesc, error) {
 
-	if _, ok := supportedArgKinds[t.Kind()]; !ok {
+	kind, ok := kindMap[t.Kind()]
+	if !ok {
 		return nil, fmt.Errorf("Arguments and return values of kind %s are not yet supported", t.Kind())
 	}
 
-	pt := &PHPType{
-		kind: t.Kind().String(),
+	pa := &PHPArgDesc{
+		kind: kind,
+		name: fmt.Sprintf("%s_%d", t.Kind(), nth),
 	}
 
-	return pt, nil
+	return pa, nil
 }
 
 func (e *PHPExport) addIn(in reflect.Type) error {
-	if pt, err := newPHPType(in); err != nil {
+	if pa, err := newPHPArgDesc(in, len(e.ins)); err != nil {
 		return err
 	} else {
-		e.ins = append(e.ins, pt)
+		e.ins = append(e.ins, pa)
 		return nil
 	}
 }
 
 func (e *PHPExport) addOut(out reflect.Type) error {
-	if pt, err := newPHPType(out); err != nil {
+	if pa, err := newPHPArgDesc(out, len(e.outs)); err != nil {
 		return err
 	} else {
-		e.outs = append(e.outs, pt)
+		e.outs = append(e.outs, pa)
 		return nil
 	}
 }

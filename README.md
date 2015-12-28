@@ -13,7 +13,7 @@ This is a work in progress.
 ## TODO:
 
 - [ ] Support exporting constants
-- [ ] Support all scalar types
+- [x] Support all scalar types
 - [ ] Support slices, maps (copying)
 - [ ] Support objects (proxying)
 

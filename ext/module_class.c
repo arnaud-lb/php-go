@@ -88,15 +88,52 @@ PHP_METHOD(PHPGo__Module, __fun)
 	ins = ecalloc(export->num_ins, sizeof(*ins));
 
 	for (i = 0; i < export->num_ins; i++) {
-		php_type *t = &export->ins[i];
-		if (strcmp(t->kind, "int") == 0) {
-			long l;
-			if (zend_parse_parameter(0, i, args[i], "l", &l) != SUCCESS) {
-				return;
-			}
-			ins[i].i = (int) l;
-		} else {
-			php_error(E_ERROR, "Interval error: unknown input type `%s`", t->kind);
+		php_arg_desc *a = &export->ins[i];
+        switch (a->kind) {
+            case PHPGO_KIND_BOOL: {
+                zend_bool b;
+                if (zend_parse_parameter(0, i+1, args[i], "b", &b) != SUCCESS) {
+                    return;
+                }
+                ins[i].b = b;
+                break;
+            }
+            case PHPGO_KIND_INT:
+            case PHPGO_KIND_INT8:
+            case PHPGO_KIND_INT32:
+            case PHPGO_KIND_INT64:
+            case PHPGO_KIND_UINT:
+            case PHPGO_KIND_UINT8:
+            case PHPGO_KIND_UINT32:
+            case PHPGO_KIND_UINT64: {
+                long l;
+                if (zend_parse_parameter(0, i+1, args[i], "l", &l) != SUCCESS) {
+                    return;
+                }
+                ins[i].l = l;
+                break;
+            }
+            case PHPGO_KIND_FLOAT32:
+            case PHPGO_KIND_FLOAT64: {
+                double d;
+                if (zend_parse_parameter(0, i+1, args[i], "d", &d) != SUCCESS) {
+                    return;
+                }
+                ins[i].d = d;
+                break;
+            }
+            case PHPGO_KIND_STRING: {
+                char *s;
+                int l;
+                if (zend_parse_parameter(0, i+1, args[i], "s", &s, &l) != SUCCESS) {
+                    return;
+                }
+                ins[i].s.s = s;
+                ins[i].s.l = l;
+                break;
+            }
+            default:
+                php_error(E_ERROR, "Interval error: unknown input type `0x%x`", a->kind);
 		}
 	}
 
@@ -107,15 +144,48 @@ PHP_METHOD(PHPGo__Module, __fun)
 	}
 
 	for (i = 0; i < export->num_outs; i++) {
-		php_type *t = &export->outs[i];
-		if (strcmp(t->kind, "int") == 0) {
-			if (export->num_outs == 1) {
-				RETVAL_LONG(outs[i].i);
-			} else {
-				add_next_index_long(return_value, outs[i].i);
-			}
-		} else {
-			php_error(E_ERROR, "Interval error: unknown output type `%s`", t->kind);
+		php_arg_desc *a = &export->outs[i];
+        switch (a->kind) {
+            case PHPGO_KIND_BOOL:
+                if (export->num_outs == 1) {
+                    RETVAL_BOOL(outs[i].b);
+                } else {
+                    add_next_index_bool(return_value, outs[i].b);
+                }
+                break;
+            case PHPGO_KIND_INT:
+            case PHPGO_KIND_INT8:
+            case PHPGO_KIND_INT32:
+            case PHPGO_KIND_INT64:
+            case PHPGO_KIND_UINT:
+            case PHPGO_KIND_UINT8:
+            case PHPGO_KIND_UINT32:
+            case PHPGO_KIND_UINT64:
+                if (export->num_outs == 1) {
+                    RETVAL_LONG(outs[i].l);
+                } else {
+                    add_next_index_long(return_value, outs[i].l);
+                }
+                break;
+            case PHPGO_KIND_FLOAT32:
+            case PHPGO_KIND_FLOAT64:
+                if (export->num_outs == 1) {
+                    RETVAL_DOUBLE(outs[i].d);
+                } else {
+                    add_next_index_double(return_value, outs[i].d);
+                }
+                break;
+            case PHPGO_KIND_STRING:
+                if (export->num_outs == 1) {
+                    RETVAL_STRINGL(outs[i].s.s, outs[i].s.l, 1);
+                } else {
+                    add_next_index_stringl(return_value, outs[i].s.s, outs[i].s.l, 1);
+                }
+                free(outs[i].s.s);
+                break;
+            default:
+                free(outs);
+                php_error(E_ERROR, "Interval error: unknown output type `%s`", a->kind);
 		}
 	}
 
@@ -130,11 +200,9 @@ static void phpgo_add_method(zend_function_entry *fe, php_export *export)
 	args[0].class_name_len = export->num_ins; // required num args
 
 	for (argidx = 0; argidx < export->num_ins; argidx++) {
-		php_type *t = &export->ins[argidx];
-		char *buf;
-		int len = spprintf(&buf, 0, "%s%d", t->kind, argidx);
-		args[argidx+1].name = buf;
-		args[argidx+1].name_len = len;
+		php_arg_desc *a = &export->ins[argidx];
+		args[argidx+1].name = a->name;
+		args[argidx+1].name_len = strlen(a->name);
 	}
 
 	fe->fname = estrdup(export->name);
