@@ -138,7 +138,7 @@ PHP_FUNCTION(phpgo_load)
 		RETURN_FALSE;
 	}
 
-	phpgo_module_new_instance(return_value, module);
+	phpgo_module_new_instance(return_value, module TSRMLS_CC);
 }
 /* }}} */
 

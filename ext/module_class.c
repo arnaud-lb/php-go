@@ -92,7 +92,7 @@ PHP_METHOD(PHPGo__Module, __fun)
         switch (a->kind) {
             case PHPGO_KIND_BOOL: {
                 zend_bool b;
-                if (zend_parse_parameter(0, i+1, args[i], "b", &b) != SUCCESS) {
+                if (zend_parse_parameter(0, i+1 TSRMLS_CC, args[i], "b", &b) != SUCCESS) {
                     return;
                 }
                 ins[i].b = b;
@@ -107,7 +107,7 @@ PHP_METHOD(PHPGo__Module, __fun)
             case PHPGO_KIND_UINT32:
             case PHPGO_KIND_UINT64: {
                 long l;
-                if (zend_parse_parameter(0, i+1, args[i], "l", &l) != SUCCESS) {
+                if (zend_parse_parameter(0, i+1 TSRMLS_CC, args[i], "l", &l) != SUCCESS) {
                     return;
                 }
                 ins[i].l = l;
@@ -116,7 +116,7 @@ PHP_METHOD(PHPGo__Module, __fun)
             case PHPGO_KIND_FLOAT32:
             case PHPGO_KIND_FLOAT64: {
                 double d;
-                if (zend_parse_parameter(0, i+1, args[i], "d", &d) != SUCCESS) {
+                if (zend_parse_parameter(0, i+1 TSRMLS_CC, args[i], "d", &d) != SUCCESS) {
                     return;
                 }
                 ins[i].d = d;
@@ -125,7 +125,7 @@ PHP_METHOD(PHPGo__Module, __fun)
             case PHPGO_KIND_STRING: {
                 char *s;
                 int l;
-                if (zend_parse_parameter(0, i+1, args[i], "s", &s, &l) != SUCCESS) {
+                if (zend_parse_parameter(0, i+1 TSRMLS_CC, args[i], "s", &s, &l) != SUCCESS) {
                     return;
                 }
                 ins[i].s.s = s;
@@ -212,7 +212,7 @@ static void phpgo_add_method(zend_function_entry *fe, php_export *export)
 	fe->flags = ZEND_ACC_PUBLIC;
 }
 
-void phpgo_module_new_instance(zval *ret, phpgo_module *module)
+void phpgo_module_new_instance(zval *ret, phpgo_module *module TSRMLS_DC)
 {
 	zend_class_entry tmpce;
 	zend_class_entry *ce;
