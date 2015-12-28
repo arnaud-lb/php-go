@@ -53,17 +53,17 @@ func Export(name string, exports map[string]interface{}) *PHPExports {
 
 func newPHPExports(exports map[string]interface{}) (*PHPExports, error) {
 
-	phpExports := &PHPExports{
-		exports: make(map[string]*PHPExport, len(exports)),
-	}
+	phpExports := &PHPExports{}
 
 	for name, e := range exports {
 		if pe, err := newPHPExport(name, e); err != nil {
 			return nil, fmt.Errorf("Failed exporting `%s`: %s", name, err)
 		} else {
-			phpExports.exports[name] = pe
+			phpExports.exports = append(phpExports.exports, pe)
 		}
 	}
+
+	sort.Sort(byName(phpExports.exports))
 
 	phpExports.c = marshalExports(phpExports)
 
@@ -128,4 +128,18 @@ func newPHPExport(name string, export interface{}) (*PHPExport, error) {
 	}
 
 	return pe, nil
+}
+
+type byName []*PHPExport
+
+func (b byName) Len() int {
+	return len(b)
+}
+
+func (b byName) Less(i, j int) bool {
+	return b[i].name < b[j].name
+}
+
+func (b byName) Swap(i, j int) {
+	b[i], b[j] = b[j], b[i]
 }
