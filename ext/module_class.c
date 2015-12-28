@@ -185,7 +185,7 @@ PHP_METHOD(PHPGo__Module, __fun)
                 break;
             default:
                 free(outs);
-                php_error(E_ERROR, "Interval error: unknown output type `%s`", a->kind);
+                php_error(E_ERROR, "Interval error: unknown output type `0x%x`", a->kind);
 		}
 	}
 
