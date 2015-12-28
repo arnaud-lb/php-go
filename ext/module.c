@@ -87,7 +87,6 @@ char* phpgo_load(phpgo_module **module_pp, const char *path, const char *name) {
 
 	for (i = 0; i < exports->num_exports; i++) {
 		php_export *e = &exports->exports[i];
-		fprintf(stderr, "export: 0x%zx\n", (size_t)e);
 		zend_hash_add(&module->exports, e->name, strlen(e->name)+1, &e, sizeof(php_export*), NULL);
 	}
 
