@@ -5,7 +5,7 @@ Reflection
 $module = phpgo_load(__DIR__ . "/fixtures/go/test.so", "test");
 ReflectionClass::export($module);
 --EXPECTF--
-Class [ <internal> final class PHPGo\Module\test_%s ] {
+Class [ <internal:phpgo> final class PHPGo\Module\test_%s ] {
 
   - Constants [0] {
   }
@@ -20,7 +20,7 @@ Class [ <internal> final class PHPGo\Module\test_%s ] {
   }
 
   - Methods [12] {
-    Method [ <internal> public method add ] {
+    Method [ <internal:phpgo> public method add ] {
 
       - Parameters [2] {
         Parameter #0 [ <required> $int_0 ]
@@ -28,7 +28,7 @@ Class [ <internal> final class PHPGo\Module\test_%s ] {
       }
     }
 
-    Method [ <internal> public method add32 ] {
+    Method [ <internal:phpgo> public method add32 ] {
 
       - Parameters [2] {
         Parameter #0 [ <required> $int32_0 ]
@@ -36,7 +36,7 @@ Class [ <internal> final class PHPGo\Module\test_%s ] {
       }
     }
 
-    Method [ <internal> public method add64 ] {
+    Method [ <internal:phpgo> public method add64 ] {
 
       - Parameters [2] {
         Parameter #0 [ <required> $int64_0 ]
@@ -44,7 +44,7 @@ Class [ <internal> final class PHPGo\Module\test_%s ] {
       }
     }
 
-    Method [ <internal> public method add8 ] {
+    Method [ <internal:phpgo> public method add8 ] {
 
       - Parameters [2] {
         Parameter #0 [ <required> $int8_0 ]
@@ -52,7 +52,7 @@ Class [ <internal> final class PHPGo\Module\test_%s ] {
       }
     }
 
-    Method [ <internal> public method addf32 ] {
+    Method [ <internal:phpgo> public method addf32 ] {
 
       - Parameters [2] {
         Parameter #0 [ <required> $float32_0 ]
@@ -60,7 +60,7 @@ Class [ <internal> final class PHPGo\Module\test_%s ] {
       }
     }
 
-    Method [ <internal> public method addf64 ] {
+    Method [ <internal:phpgo> public method addf64 ] {
 
       - Parameters [2] {
         Parameter #0 [ <required> $float64_0 ]
@@ -68,7 +68,7 @@ Class [ <internal> final class PHPGo\Module\test_%s ] {
       }
     }
 
-    Method [ <internal> public method addu ] {
+    Method [ <internal:phpgo> public method addu ] {
 
       - Parameters [2] {
         Parameter #0 [ <required> $uint_0 ]
@@ -76,7 +76,7 @@ Class [ <internal> final class PHPGo\Module\test_%s ] {
       }
     }
 
-    Method [ <internal> public method addu32 ] {
+    Method [ <internal:phpgo> public method addu32 ] {
 
       - Parameters [2] {
         Parameter #0 [ <required> $uint32_0 ]
@@ -84,7 +84,7 @@ Class [ <internal> final class PHPGo\Module\test_%s ] {
       }
     }
 
-    Method [ <internal> public method addu64 ] {
+    Method [ <internal:phpgo> public method addu64 ] {
 
       - Parameters [2] {
         Parameter #0 [ <required> $uint64_0 ]
@@ -92,7 +92,7 @@ Class [ <internal> final class PHPGo\Module\test_%s ] {
       }
     }
 
-    Method [ <internal> public method addu8 ] {
+    Method [ <internal:phpgo> public method addu8 ] {
 
       - Parameters [2] {
         Parameter #0 [ <required> $uint8_0 ]
@@ -100,7 +100,7 @@ Class [ <internal> final class PHPGo\Module\test_%s ] {
       }
     }
 
-    Method [ <internal> public method boolAnd ] {
+    Method [ <internal:phpgo> public method boolAnd ] {
 
       - Parameters [2] {
         Parameter #0 [ <required> $bool_0 ]
@@ -108,7 +108,7 @@ Class [ <internal> final class PHPGo\Module\test_%s ] {
       }
     }
 
-    Method [ <internal> public method concat ] {
+    Method [ <internal:phpgo> public method concat ] {
 
       - Parameters [2] {
         Parameter #0 [ <required> $string_0 ]

@@ -18,4 +18,5 @@
 
 void phpgo_module_new_instance(zval *ret, phpgo_module *module TSRMLS_DC);
 void phpgo_module_class_init();
+void phpgo_module_destroy_class(zend_class_entry *ce);
 

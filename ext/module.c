@@ -40,7 +40,7 @@ static char* find_php_go_call_fun(PHPGoCallFun *fun, void *handle) {
 	return NULL;
 }
 
-char* phpgo_load(phpgo_module **module_pp, const char *path, const char *name) {
+char* phpgo_module_load(phpgo_module **module_pp, const char *path, const char *name) {
 
 	char *err;
 	void *handle;
@@ -52,7 +52,7 @@ char* phpgo_load(phpgo_module **module_pp, const char *path, const char *name) {
    
 	handle = dlopen(path, RTLD_NOW);
 	if (!handle) {
-		return dlerror();
+		return estrdup(dlerror());
 	}
 
 	err = find_php_go_exports_fun(&php_go_exports_fun, handle);
@@ -94,3 +94,11 @@ char* phpgo_load(phpgo_module **module_pp, const char *path, const char *name) {
 
 	return NULL;
 }
+
+void phpgo_module_free(phpgo_module *module) {
+	efree(module->name);
+	zend_hash_destroy(&module->exports);
+	efree(module);
+}
+
+

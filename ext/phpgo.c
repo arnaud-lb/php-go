@@ -97,10 +97,23 @@ PHP_RINIT_FUNCTION(phpgo)
 }
 /* }}} */
 
+static int clean_module_class(void *pDest TSRMLS_DC) /* {{{ */
+{
+    zend_class_entry *ce = *(zend_class_entry**)pDest;
+	if (ce->type == ZEND_INTERNAL_CLASS && ce->info.internal.module->module_number == phpgo_module_entry.module_number) {
+        phpgo_module_destroy_class(ce);
+		return ZEND_HASH_APPLY_REMOVE;
+	} else {
+		return ZEND_HASH_APPLY_KEEP;
+	}
+}
+/* }}} */
+
 /* {{{ PHP_RSHUTDOWN_FUNCTION
  */
 PHP_RSHUTDOWN_FUNCTION(phpgo)
 {
+	zend_hash_apply(EG(class_table), clean_module_class TSRMLS_CC);
 	return SUCCESS;
 }
 /* }}} */
@@ -131,7 +144,7 @@ PHP_FUNCTION(phpgo_load)
 		return;
 	}
 
-	err = phpgo_load(&module, path, name);
+	err = phpgo_module_load(&module, path, name);
 	if (err) {
 		php_error(E_WARNING, "Failed loading %s (%s): %s", path, name, err);
 		efree(err);

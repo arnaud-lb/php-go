@@ -22,3 +22,14 @@ php_arg_desc * init_php_export_in(php_export * pe, size_t i) {
 php_arg_desc * init_php_export_out(php_export * pe, size_t i) {
     return &pe->outs[i];
 }
+
+void free_php_exports(php_exports * pes) {
+    int i;
+    for (i = 0; i < pes->exports; i++) {
+        php_export * pe = &pes->exports[i];
+        free(pe->ins);
+        free(pe->outs);
+    }
+    free(pe->exports);
+    free(pe);
+}

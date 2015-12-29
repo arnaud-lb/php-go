@@ -29,7 +29,8 @@ typedef struct {
 	PHPGoCallFun php_go_call_fun;
 } phpgo_module;
 
-char* phpgo_load(phpgo_module **module_pp, const char *path, const char *name);
+char* phpgo_module_load(phpgo_module **module_pp, const char *path, const char *name);
+void phpgo_module_free(phpgo_module *module);
 
 #endif /* MODULE_H */
 
