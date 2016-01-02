@@ -228,18 +228,6 @@ static void phpgo_add_method(zend_function_entry *fe, php_export *export)
 	fe->flags = ZEND_ACC_PUBLIC;
 }
 
-void phpgo_module_destroy_class(zend_class_entry *ce)
-{
-	zend_function *f;
-	for (zend_hash_internal_pointer_reset(&ce->function_table);
-			zend_hash_get_current_data(&ce->function_table, (void**)&f) == SUCCESS;
-			zend_hash_move_forward(&ce->function_table)) {
-		efree((void*)(f->common.arg_info-1));
-		f->common.arg_info = NULL;
-		f->common.num_args = 0;
-	}
-}
-
 void phpgo_module_new_instance(zval *ret, phpgo_module *module TSRMLS_DC)
 {
 	zend_class_entry tmpce;
@@ -272,6 +260,7 @@ void phpgo_module_new_instance(zval *ret, phpgo_module *module TSRMLS_DC)
 	ce = zend_register_internal_class(&tmpce TSRMLS_CC);
 	ce->create_object = module_new;
 	ce->ce_flags |= ZEND_ACC_FINAL_CLASS;
+	zend_llist_add_element(&PHPGO_G(classes), &ce);
 
 	object_init_ex(ret, ce);
 
@@ -289,3 +278,24 @@ void phpgo_module_class_init()
 	memcpy(&module_object_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	module_object_handlers.clone_obj = NULL;
 }
+
+void destroy_module_class(zend_class_entry *ce)
+{
+	zend_function *f;
+	for (zend_hash_internal_pointer_reset(&ce->function_table);
+			zend_hash_get_current_data(&ce->function_table, (void**)&f) == SUCCESS;
+			zend_hash_move_forward(&ce->function_table)) {
+		efree((void*)(f->common.arg_info-1));
+		f->common.arg_info = NULL;
+		f->common.num_args = 0;
+	}
+}
+
+void phpgo_module_class_list_dtor(void *data TSRMLS_DC) /* {{{ */
+{
+	zend_class_entry *ce = *(zend_class_entry**)data;
+	if (ce->refcount == 1) {
+		destroy_module_class(ce);
+	}
+}
+/* }}} */

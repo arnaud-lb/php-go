@@ -65,7 +65,7 @@ ZEND_GET_MODULE(phpgo)
 
 /* {{{ php_phpgo_init_globals
  */
-static void php_phpgo_init_globals(zend_phpgo_globals *phpgo_globals)
+static void php_phpgo_init_globals(zend_phpgo_globals *phpgo_globals TSRMLS_DC)
 {
 	phpgo_globals->load_counter = 0;
 }
@@ -93,19 +93,8 @@ PHP_MSHUTDOWN_FUNCTION(phpgo)
  */
 PHP_RINIT_FUNCTION(phpgo)
 {
+	zend_llist_init(&PHPGO_G(classes), sizeof(zend_class_entry*), phpgo_module_class_list_dtor, 0);
 	return SUCCESS;
-}
-/* }}} */
-
-static int clean_module_class(void *pDest TSRMLS_DC) /* {{{ */
-{
-	zend_class_entry *ce = *(zend_class_entry**)pDest;
-	if (ce->type == ZEND_INTERNAL_CLASS && ce->info.internal.module->module_number == phpgo_module_entry.module_number) {
-		phpgo_module_destroy_class(ce);
-		return ZEND_HASH_APPLY_REMOVE;
-	} else {
-		return ZEND_HASH_APPLY_KEEP;
-	}
 }
 /* }}} */
 
@@ -113,7 +102,7 @@ static int clean_module_class(void *pDest TSRMLS_DC) /* {{{ */
  */
 PHP_RSHUTDOWN_FUNCTION(phpgo)
 {
-	zend_hash_apply(EG(class_table), clean_module_class TSRMLS_CC);
+	zend_llist_destroy(&PHPGO_G(classes));
 	return SUCCESS;
 }
 /* }}} */

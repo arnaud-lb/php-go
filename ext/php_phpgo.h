@@ -47,7 +47,8 @@ PHP_MINFO_FUNCTION(phpgo);
 PHP_FUNCTION(phpgo_load);
 
 ZEND_BEGIN_MODULE_GLOBALS(phpgo)
-	int  load_counter;
+	zend_llist classes;
+	int        load_counter;
 ZEND_END_MODULE_GLOBALS(phpgo)
 
 ZEND_EXTERN_MODULE_GLOBALS(phpgo);
