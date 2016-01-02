@@ -3,6 +3,7 @@ package php
 import (
 	"fmt"
 	"reflect"
+	"runtime"
 	"sort"
 )
 
@@ -54,6 +55,7 @@ func Export(name string, exports map[string]interface{}) *PHPExports {
 func newPHPExports(exports map[string]interface{}) (*PHPExports, error) {
 
 	phpExports := &PHPExports{}
+	runtime.SetFinalizer(phpExports, phpExportsFinalizer)
 
 	for name, e := range exports {
 		if pe, err := newPHPExport(name, e); err != nil {
@@ -68,6 +70,12 @@ func newPHPExports(exports map[string]interface{}) (*PHPExports, error) {
 	phpExports.c = marshalExports(phpExports)
 
 	return phpExports, nil
+}
+
+func phpExportsFinalizer(pes *PHPExports) {
+	if pes.c != nil {
+		freeMarshalled(pes.c)
+	}
 }
 
 func newPHPArgDesc(t reflect.Type, nth int) (*PHPArgDesc, error) {

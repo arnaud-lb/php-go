@@ -24,12 +24,12 @@ php_arg_desc * init_php_export_out(php_export * pe, size_t i) {
 }
 
 void free_php_exports(php_exports * pes) {
-    int i;
-    for (i = 0; i < pes->exports; i++) {
+    size_t i;
+    for (i = 0; i < pes->num_exports; i++) {
         php_export * pe = &pes->exports[i];
         free(pe->ins);
         free(pe->outs);
     }
-    free(pe->exports);
-    free(pe);
+    free(pes->exports);
+    free(pes);
 }

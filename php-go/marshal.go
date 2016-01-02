@@ -56,3 +56,7 @@ func marshalExport(cpe *C.php_export, pe *PHPExport) {
 	}
 	cpe.num_outs = C.size_t(len(pe.outs))
 }
+
+func freeMarshalled(cpe *CPHPExports) {
+	C.free_php_exports((*C.php_exports)(cpe))
+}
