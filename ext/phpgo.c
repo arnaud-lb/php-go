@@ -129,7 +129,7 @@ PHP_FUNCTION(phpgo_load)
 	phpgo_module *module;
 	char *err;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss", &path, &path_len, &name, &name_len) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ps", &path, &path_len, &name, &name_len) == FAILURE) {
 		return;
 	}
 
