@@ -68,6 +68,7 @@ ZEND_GET_MODULE(phpgo)
 static void php_phpgo_init_globals(zend_phpgo_globals *phpgo_globals TSRMLS_DC)
 {
 	phpgo_globals->load_counter = 0;
+	zend_hash_init(&phpgo_globals->modules, 0, NULL, phpgo_module_dtor, 1);
 }
 /* }}} */
 
@@ -85,6 +86,7 @@ PHP_MINIT_FUNCTION(phpgo)
  */
 PHP_MSHUTDOWN_FUNCTION(phpgo)
 {
+	zend_hash_destroy(&PHPGO_G(modules));
 	return SUCCESS;
 }
 /* }}} */
@@ -133,7 +135,7 @@ PHP_FUNCTION(phpgo_load)
 		return;
 	}
 
-	err = phpgo_module_load(&module, path, name);
+	err = phpgo_module_load(&module, path, name TSRMLS_CC);
 	if (err) {
 		php_error(E_WARNING, "Failed loading %s (%s): %s", path, name, err);
 		efree(err);

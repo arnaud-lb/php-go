@@ -40,7 +40,38 @@ static char* find_php_go_call_fun(PHPGoCallFun *fun, void *handle) {
 	return NULL;
 }
 
-char* phpgo_module_load(phpgo_module **module_pp, const char *path, const char *name) {
+static phpgo_module *find_cached_module(const char *path, const char *name TSRMLS_DC) {
+
+	size_t path_len = strlen(path);
+	size_t name_len = strlen(name);
+	size_t key_len = path_len + 1 + name_len + 1;
+	char *key = emalloc(key_len);
+	int found;
+	phpgo_module **pm;
+
+	memcpy(key, path, path_len+1);
+	memcpy(&key[path_len+1], name, name_len+1);
+
+	found = zend_hash_find(&PHPGO_G(modules), key, key_len, (void**)&pm);
+	efree(key);
+
+	if (found != SUCCESS) {
+		return NULL;
+	}
+
+	return *pm;
+}
+
+static void cache_module(const char *path, const char *name, phpgo_module *m TSRMLS_DC) {
+	size_t path_len = strlen(path);
+	size_t name_len = strlen(name);
+	size_t key_len = path_len + 1 + name_len + 1;
+	char *key = emalloc(key_len);
+	zend_hash_add(&PHPGO_G(modules), key, key_len, &m, sizeof(m), NULL);
+	efree(key);
+}
+
+char* phpgo_module_load(phpgo_module **module_pp, const char *path, const char *name TSRMLS_DC) {
 
 	char *err;
 	void *handle;
@@ -49,7 +80,13 @@ char* phpgo_module_load(phpgo_module **module_pp, const char *path, const char *
 	php_exports *exports;
 	int i;
 	phpgo_module *module;
-   
+
+	module = find_cached_module(path, name TSRMLS_CC);
+	if (module != NULL) {
+		*module_pp = module;
+		return NULL;
+	}
+
 	handle = dlopen(path, RTLD_NOW);
 	if (!handle) {
 		return estrdup(dlerror());
@@ -78,17 +115,19 @@ char* phpgo_module_load(phpgo_module **module_pp, const char *path, const char *
 		return buf;
 	}
 
-	module = emalloc(sizeof(*module));
+	module = malloc(sizeof(*module));
 
-	module->name = estrdup(name);
+	module->name = strdup(name);
 	module->php_go_call_fun = php_go_call_fun;
 
-	zend_hash_init(&module->exports, exports->num_exports, NULL, NULL, 0);
+	zend_hash_init(&module->exports, exports->num_exports, NULL, NULL, 1);
 
 	for (i = 0; i < exports->num_exports; i++) {
 		php_export *e = &exports->exports[i];
 		zend_hash_add(&module->exports, e->name, strlen(e->name)+1, &e, sizeof(php_export*), NULL);
 	}
+
+	cache_module(path, name, module TSRMLS_CC);
 
 	*module_pp = module;
 
@@ -96,9 +135,11 @@ char* phpgo_module_load(phpgo_module **module_pp, const char *path, const char *
 }
 
 void phpgo_module_free(phpgo_module *module) {
-	efree(module->name);
+	free(module->name);
 	zend_hash_destroy(&module->exports);
-	efree(module);
+	free(module);
 }
 
-
+void phpgo_module_dtor(void *data) {
+	phpgo_module_free(*(phpgo_module**)data);
+}

@@ -49,6 +49,7 @@ PHP_FUNCTION(phpgo_load);
 ZEND_BEGIN_MODULE_GLOBALS(phpgo)
 	zend_llist classes;
 	int        load_counter;
+	HashTable  modules;
 ZEND_END_MODULE_GLOBALS(phpgo)
 
 ZEND_EXTERN_MODULE_GLOBALS(phpgo);

@@ -29,7 +29,6 @@ zend_object_handlers module_object_handlers;
 void module_free(void *object TSRMLS_DC) /* {{{ */
 {
 	module_intern *intern = (module_intern*)object;
-	phpgo_module_free(intern->module);
 	efree(intern);
 }
 /* }}} */
