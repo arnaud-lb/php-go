@@ -1,6 +1,6 @@
 # php-go
 
-php-go allows to call Go code from PHP.
+php-go allows to call Go code from PHP, with minimal code boilerplate.
 
 This is a work in progress.
 
