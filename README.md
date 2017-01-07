@@ -1,5 +1,7 @@
 # php-go
 
+![Supported PHP versions: 7.x](https://img.shields.io/badge/php-7.x-blue.svg) [![Build Status](https://travis-ci.org/arnaud-lb/php-go.svg)](https://travis-ci.org/arnaud-lb/php-go)
+
 php-go allows to call Go code from PHP, with minimal code boilerplate.
 
 This is a work in progress.
@@ -44,7 +46,7 @@ import (
 
 // call php.Export() for its side effects
 var _ = php.Export("example", map[string]interface{}{
-  "toUpper": strings.ToLower,
+  "toUpper": strings.ToUpper,
   "takeOverTheWorld": TakeOverTheWorld,
 }
 
