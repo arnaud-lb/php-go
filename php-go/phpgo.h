@@ -47,7 +47,7 @@ typedef struct {
 
 typedef struct {
     char *s;
-    int l;
+    size_t l;
 } php_arg_string;
 
 typedef union {

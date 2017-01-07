@@ -42,7 +42,7 @@ func PHPGoCall(pes *C.php_export, args *C.php_arg) *C.php_arg {
 			v = reflect.ValueOf(float64(*(*C.double)(argPtr)))
 		case String:
 			s := (*C.php_arg_string)(argPtr)
-			v = reflect.ValueOf(C.GoStringN(s.s, s.l))
+			v = reflect.ValueOf(C.GoStringN(s.s, C.int(s.l)))
 		default:
 			panic(fmt.Sprintf("PHPGoCall: Unexpected input kind `0x%x`", in.kind))
 		}
@@ -68,7 +68,7 @@ func PHPGoCall(pes *C.php_export, args *C.php_arg) *C.php_arg {
 			val := outs[i].String()
 			s := (*C.php_arg_string)(ptr)
 			s.s = C.CString(val)
-			s.l = C.int(len(val))
+			s.l = C.size_t(len(val))
 		default:
 			panic(fmt.Sprintf("PHPGoCall: Unexpected output kind `0x%x`", out.kind))
 		}

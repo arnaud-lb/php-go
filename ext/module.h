@@ -1,8 +1,8 @@
 /*
   +----------------------------------------------------------------------+
-  | PHP Version 5                                                        |
+  | php-go                                                               |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2015 Arnaud Le Blanc                              |
+  | Copyright (c) 2015-2016 Arnaud Le Blanc                              |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -31,7 +31,7 @@ typedef struct {
 
 char* phpgo_module_load(phpgo_module **module_pp, const char *path, const char *name TSRMLS_DC);
 void phpgo_module_free(phpgo_module *module);
-void phpgo_module_dtor(void *data);
+void phpgo_module_dtor(zval *pDest);
 
 #endif /* MODULE_H */
 

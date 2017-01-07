@@ -1,8 +1,8 @@
 /*
   +----------------------------------------------------------------------+
-  | PHP Version 5                                                        |
+  | php-go                                                               |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2015 Arnaud Le Blanc                              |
+  | Copyright (c) 1997-2016 Arnaud Le Blanc                              |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -20,70 +20,65 @@
 #include "module.h"
 
 typedef struct {
-	zend_object  std;
 	phpgo_module *module;
+	zend_object  std;
 } module_intern;
 
 zend_object_handlers module_object_handlers;
 
-void module_free(void *object TSRMLS_DC) /* {{{ */
+static module_intern* get_module_intern(zval *obj)
 {
-	module_intern *intern = (module_intern*)object;
-	efree(intern);
+	return (module_intern*)((char *)Z_OBJ_P(obj) - XtOffsetOf(module_intern, std));
 }
-/* }}} */
 
-static zend_object_value module_new(zend_class_entry *class_type TSRMLS_DC) /* {{{ */
+static zend_object* module_new(zend_class_entry *class_type TSRMLS_DC) /* {{{ */
 {
-	zend_object_value retval;
 	module_intern *intern;
 
-	intern = ecalloc(1, sizeof(*intern));
+	intern = ecalloc(1, sizeof(*intern) + zend_object_properties_size(class_type));
 	zend_object_std_init(&intern->std, class_type TSRMLS_CC);
 	object_properties_init(&intern->std, class_type);
 
-	retval.handle = zend_objects_store_put(&intern->std, (zend_objects_store_dtor_t) zend_objects_destroy_object, module_free, NULL TSRMLS_CC);
-	retval.handlers = &module_object_handlers;
+	intern->std.handlers = &module_object_handlers;
 
-	return retval;
+	return &intern->std;
 }
 /* }}} */
 
 PHP_METHOD(PHPGo__Module, __fun)
 {
-	zval ***args = NULL;
+	zval *args = NULL;
 	int argc;
-	const char *fname;
+	zend_string *fname;
 	module_intern *intern;
-	php_export **pexport;
 	php_export *export;
 	php_arg *ins = NULL;
 	php_arg *outs = NULL;
-	zend_function *active_function = EG(current_execute_data)->function_state.function;
-	int i;
+	zend_function *active_function = EG(current_execute_data)->func;
+	size_t i;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "*", &args, &argc) == FAILURE) {
 		return;
 	}
 
 	fname = active_function->common.function_name;
-	intern = (module_intern*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	intern = get_module_intern(getThis());
 
-	if (zend_hash_find(&intern->module->exports, fname, strlen(fname)+1, (void**)&pexport) != SUCCESS) {
-		php_error(E_ERROR, "Internal error: couldn't find export named `%s`", fname);
+	export = zend_hash_find_ptr(&intern->module->exports, fname);
+
+	if (export == NULL) {
+		php_error(E_ERROR, "Internal error: couldn't find export named `%s`", ZSTR_VAL(fname));
 		goto out;
 	}
 
-	export = *pexport;
-
-	if (argc != export->num_ins) {
-		const char *class_name = active_function->common.scope ? active_function->common.scope->name : "";
+	if (((size_t)argc) != export->num_ins) {
+		const char *class_name = active_function->common.scope ? ZSTR_VAL(active_function->common.scope->name) : "";
 		php_error(
 			E_WARNING,
 			"%s%s%s() expects %s %d parameter%s, %d given",
 			class_name,
 			class_name[0] ? "::" : "",
-			fname,
+			ZSTR_VAL(fname),
 			"exactly",
 			(int) export->num_ins,
 			export->num_ins == 1 ? "" : "s",
@@ -99,7 +94,7 @@ PHP_METHOD(PHPGo__Module, __fun)
 		switch (a->kind) {
 			case PHPGO_KIND_BOOL: {
 				zend_bool b;
-				if (zend_parse_parameter(0, i+1 TSRMLS_CC, args[i], "b", &b) != SUCCESS) {
+				if (zend_parse_parameter(0, i+1 TSRMLS_CC, &args[i], "b", &b) != SUCCESS) {
 					goto out;
 				}
 				ins[i].b = b;
@@ -114,7 +109,7 @@ PHP_METHOD(PHPGo__Module, __fun)
 			case PHPGO_KIND_UINT32:
 			case PHPGO_KIND_UINT64: {
 				long l;
-				if (zend_parse_parameter(0, i+1 TSRMLS_CC, args[i], "l", &l) != SUCCESS) {
+				if (zend_parse_parameter(0, i+1 TSRMLS_CC, &args[i], "l", &l) != SUCCESS) {
 					goto out;
 				}
 				ins[i].l = l;
@@ -123,7 +118,7 @@ PHP_METHOD(PHPGo__Module, __fun)
 			case PHPGO_KIND_FLOAT32:
 			case PHPGO_KIND_FLOAT64: {
 				double d;
-				if (zend_parse_parameter(0, i+1 TSRMLS_CC, args[i], "d", &d) != SUCCESS) {
+				if (zend_parse_parameter(0, i+1 TSRMLS_CC, &args[i], "d", &d) != SUCCESS) {
 					goto out;
 				}
 				ins[i].d = d;
@@ -131,8 +126,8 @@ PHP_METHOD(PHPGo__Module, __fun)
 			}
 			case PHPGO_KIND_STRING: {
 				char *s;
-				int l;
-				if (zend_parse_parameter(0, i+1 TSRMLS_CC, args[i], "s", &s, &l) != SUCCESS) {
+				size_t l;
+				if (zend_parse_parameter(0, i+1 TSRMLS_CC, &args[i], "s", &s, &l) != SUCCESS) {
 					goto out;
 				}
 				ins[i].s.s = s;
@@ -184,9 +179,9 @@ PHP_METHOD(PHPGo__Module, __fun)
 				break;
 			case PHPGO_KIND_STRING:
 				if (export->num_outs == 1) {
-					RETVAL_STRINGL(outs[i].s.s, outs[i].s.l, 1);
+					RETVAL_STRINGL(outs[i].s.s, outs[i].s.l);
 				} else {
-					add_next_index_stringl(return_value, outs[i].s.s, outs[i].s.l, 1);
+					add_next_index_stringl(return_value, outs[i].s.s, outs[i].s.l);
 				}
 				free(outs[i].s.s);
 				break;
@@ -196,9 +191,6 @@ PHP_METHOD(PHPGo__Module, __fun)
 	}
 
 out:
-	if (args) {
-		efree(args);
-	}
 	if (ins) {
 		efree(ins);
 	}
@@ -209,15 +201,14 @@ out:
 
 static void phpgo_add_method(zend_function_entry *fe, php_export *export)
 {
-	int argidx;
-	zend_arg_info *args = ecalloc(export->num_ins+1, sizeof(*args));
+	size_t argidx;
+	zend_internal_arg_info *args = ecalloc(export->num_ins+1, sizeof(*args));
 
-	args[0].class_name_len = export->num_ins; // required num args
+	args[0].name = (const char*)(zend_uintptr_t) export->num_ins; // required num args
 
 	for (argidx = 0; argidx < export->num_ins; argidx++) {
 		php_arg_desc *a = &export->ins[argidx];
 		args[argidx+1].name = a->name;
-		args[argidx+1].name_len = strlen(a->name);
 	}
 
 	fe->fname = export->name;
@@ -235,7 +226,7 @@ void phpgo_module_new_instance(zval *ret, phpgo_module *module TSRMLS_DC)
 	module_intern *intern;
 	zend_function_entry *module_fe;
 	HashPosition pos;
-	php_export **pexport;
+	zval *zexport;
 	int fidx = -1;
 	zend_module_entry *prev_module;
 
@@ -248,22 +239,22 @@ void phpgo_module_new_instance(zval *ret, phpgo_module *module TSRMLS_DC)
 	module_fe = ecalloc(zend_hash_num_elements(&module->exports)+1, sizeof(*module_fe));
 
 	for (zend_hash_internal_pointer_reset_ex(&module->exports, &pos);
-			zend_hash_get_current_data_ex(&module->exports, (void**)&pexport, &pos) == SUCCESS;
+			(zexport = zend_hash_get_current_data_ex(&module->exports, &pos)) != NULL;
 			zend_hash_move_forward_ex(&module->exports, &pos)) {
 		fidx++;
-		phpgo_add_method(&module_fe[fidx], *pexport);
+		phpgo_add_method(&module_fe[fidx], (php_export*) Z_PTR_P(zexport));
 	}
 
 	INIT_CLASS_ENTRY_EX(tmpce, class_name, strlen(class_name), module_fe);
 
 	ce = zend_register_internal_class(&tmpce TSRMLS_CC);
 	ce->create_object = module_new;
-	ce->ce_flags |= ZEND_ACC_FINAL_CLASS;
+	ce->ce_flags |= ZEND_ACC_FINAL;
 	zend_llist_add_element(&PHPGO_G(classes), &ce);
 
 	object_init_ex(ret, ce);
 
-	intern = (module_intern*)zend_object_store_get_object(ret TSRMLS_CC);
+	intern = get_module_intern(ret);
 	intern->module = module;
 
 	efree(class_name);
@@ -276,14 +267,16 @@ void phpgo_module_class_init()
 {
 	memcpy(&module_object_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	module_object_handlers.clone_obj = NULL;
+	module_object_handlers.offset = XtOffsetOf(module_intern, std);
 }
 
 void destroy_module_class(zend_class_entry *ce)
 {
-	zend_function *f;
+	zval *zfunc;
 	for (zend_hash_internal_pointer_reset(&ce->function_table);
-			zend_hash_get_current_data(&ce->function_table, (void**)&f) == SUCCESS;
+			(zfunc = zend_hash_get_current_data(&ce->function_table)) != NULL;
 			zend_hash_move_forward(&ce->function_table)) {
+		zend_function *f = Z_PTR_P(zfunc);
 		efree((void*)(f->common.arg_info-1));
 		f->common.arg_info = NULL;
 		f->common.num_args = 0;

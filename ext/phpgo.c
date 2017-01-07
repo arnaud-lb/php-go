@@ -1,8 +1,8 @@
 /*
   +----------------------------------------------------------------------+
-  | PHP Version 5                                                        |
+  | php-go                                                               |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2015 Arnaud Le Blanc                              |
+  | Copyright (c) 2015-2016 Arnaud Le Blanc                              |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -124,9 +124,9 @@ PHP_MINFO_FUNCTION(phpgo)
 PHP_FUNCTION(phpgo_load)
 {
 	char *path;
-	int path_len;
+	size_t path_len;
 	char *name;
-	int name_len;
+	size_t name_len;
 
 	phpgo_module *module;
 	char *err;
