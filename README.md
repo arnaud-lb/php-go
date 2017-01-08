@@ -4,18 +4,17 @@
 
 php-go allows to call Go code from PHP, with minimal code boilerplate.
 
-This is a work in progress.
-
 ## Goals:
 
 - Allow to _export_ Go functions and Go constants from Go to PHP
 - Be reliable and always safe
-- Build PHP extension once, use many independantly built Go modules; re-building a Go module makes new code immediately available in PHP
+- Deploy Go code without re-building the PHP extension
 
 ## TODO:
 
+- [x] Support exporting functions
+- [x] Support all scalar types in arguments and return values
 - [ ] Support exporting constants
-- [x] Support all scalar types
 - [ ] Support slices, maps (copying)
 - [ ] Support objects (proxying)
 
@@ -25,8 +24,10 @@ This is a work in progress.
 
     cd ext
     phpize && ./configure && make && sudo make install
-    
+
 Then add ``extension=phpgo.so`` to your php.ini, or call php with ``-dextension=phpgo.so``
+
+Note: php-go supports PHP 7 (non-ZTS). For PHP 5, use the php5 branch.
 
 #### Go module:
 
