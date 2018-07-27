@@ -20,19 +20,29 @@ php-go allows to call Go code from PHP, with minimal code boilerplate.
 
 ## Install
 
-#### PHP ext:
+You can download this package using "go get". When using "go get", you'll have to [set your $GOPATH](https://github.com/golang/go/wiki/SettingGOPATH) first.
+Then you can run:
 
-    cd ext
-    phpize && ./configure && make && sudo make install
+```
+go get github.com/arnaud-lb/php-go
+```
+
+When this is finished, change directories to the included "ext" folder:
+
+```
+cd $GOPATH/src/github.com/arnaud-lb/php-go/ext
+```
+
+Then configure and make the binary:
+
+```
+phpize && ./configure && make && sudo make install
+```
 
 Then add ``extension=phpgo.so`` to your php.ini, or call php with ``-dextension=phpgo.so``
 
 Note: php-go supports PHP 7 (non-ZTS). For PHP 5, use the php5 branch.
 
-#### Go module:
-
-    go get github.com/arnaud-lb/php-go/php-go
-  
 ## Usage
 
 #### Exporting Go functions
@@ -49,7 +59,7 @@ import (
 var _ = php.Export("example", map[string]interface{}{
   "toUpper": strings.ToUpper,
   "takeOverTheWorld": TakeOverTheWorld,
-}
+})
 
 func TakeOverTheWorld() {
 }
@@ -76,4 +86,3 @@ ReflectionClass::export($module);
 // Call some method
 $module->toUpper("foo");
 ```
-
