@@ -49,7 +49,7 @@ import (
 var _ = php.Export("example", map[string]interface{}{
   "toUpper": strings.ToUpper,
   "takeOverTheWorld": TakeOverTheWorld,
-}
+})
 
 func TakeOverTheWorld() {
 }
