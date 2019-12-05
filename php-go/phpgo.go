@@ -127,7 +127,7 @@ func newPHPExport(name string, export interface{}) (*PHPExport, error) {
 			}
 		}
 		for i := 0; i < t.NumOut(); i++ {
-			if err := pe.addOut(t.In(i)); err != nil {
+			if err := pe.addOut(t.Out(i)); err != nil {
 				return nil, err
 			}
 		}
