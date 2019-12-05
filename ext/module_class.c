@@ -52,7 +52,7 @@ static zend_object_value module_new(zend_class_entry *class_type TSRMLS_DC) /* {
 PHP_METHOD(PHPGo__Module, __fun)
 {
 	zval ***args = NULL;
-	int argc;
+	int argc=0;
 	const char *fname;
 	module_intern *intern;
 	php_export **pexport;
