@@ -14,7 +14,7 @@ Warning: PHPGo\Module\test_%s::boolAnd() expects exactly 2 parameters, 1 given i
 
 Warning: PHPGo\Module\test_%s::boolAnd() expects exactly 2 parameters, 3 given in %s on line %d
 
-Warning: PHPGo\Module\test_%s::boolAnd() expects parameter 1 to be bool, object given in %s on line %d
+Warning: PHPGo\Module\test_%s::boolAnd() expects parameter 1 to be %r(bool|boolean)%r, object given in %s on line %d
 
 Warning: Failed loading %s/nop.so (test): %s in %s on line %d
 
