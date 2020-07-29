@@ -3,7 +3,7 @@ Reflection
 --FILE--
 <?php
 $module = phpgo_load(__DIR__ . "/fixtures/go/test.so", "test");
-ReflectionClass::export($module);
+echo new ReflectionClass($module), "\n";
 --EXPECTF--
 Class [ <internal:phpgo> final class PHPGo\Module\test_%s ] {
 
