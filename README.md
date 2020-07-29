@@ -86,3 +86,19 @@ ReflectionClass::export($module);
 // Call some method
 $module->toUpper("foo");
 ```
+
+## Development
+
+#### Run tests locally
+
+To run the PHP test suites locally, either use the all-in-one command:
+
+```shell script
+docker run --rm -it $(docker build -q .)
+```
+
+Or alternatively, to view build output:
+
+```shell script
+docker build -t test . && docker run -it test
+```
